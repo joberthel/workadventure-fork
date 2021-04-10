@@ -98,3 +98,9 @@ services:
       - "traefik.http.routers.back-ssl.service=back"
       - "traefik.http.routers.back-ssl.tls.certresolver=myresolver"
     restart: unless-stopped
+  
+  coturn:
+    image: instrumentisto/coturn
+    ports:
+      - 3478:3478
+      - 49152-65535:49152-65535/udp
