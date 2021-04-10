@@ -98,7 +98,3 @@ services:
       - "traefik.http.routers.back-ssl.service=back"
       - "traefik.http.routers.back-ssl.tls.certresolver=myresolver"
     restart: unless-stopped
-  
-  coturn:
-    image: instrumentisto/coturn
-    network_mode: host
