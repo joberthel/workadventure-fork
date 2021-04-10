@@ -43,10 +43,10 @@ services:
       TURN_PASSWORD: "${TURN_PASSWORD}"
       START_ROOM_URL: "${START_ROOM_URL}"
     labels:
-      - "traefik.http.routers.front.rule=Host(`play.${DOMAIN}`)"
+      - "traefik.http.routers.front.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.front.entryPoints=web,traefik"
       - "traefik.http.services.front.loadbalancer.server.port=80"
-      - "traefik.http.routers.front-ssl.rule=Host(`play.${DOMAIN}`)"
+      - "traefik.http.routers.front-ssl.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.front-ssl.entryPoints=websecure"
       - "traefik.http.routers.front-ssl.tls=true"
       - "traefik.http.routers.front-ssl.service=front"
