@@ -1,6 +1,6 @@
 FROM thecodingmachine/nodejs:12-apache
 
-COPY --chown=docker:docker . .
+COPY . .
 #RUN yarn install
 
 #ENV NODE_ENV=production
