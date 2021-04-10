@@ -69,6 +69,7 @@ import FILE_LOAD_ERROR = Phaser.Loader.Events.FILE_LOAD_ERROR;
 import DOMElement = Phaser.GameObjects.DOMElement;
 import {Subscription} from "rxjs";
 import {worldFullMessageStream} from "../../Connexion/WorldFullMessageStream";
+import { lazyLoadCompanionResource } from "../Companion/CompanionTexturesLoadingManager";
 
 export interface GameSceneInitInterface {
     initPosition: PointInterface|null,
@@ -159,6 +160,7 @@ export class GameScene extends ResizableScene implements CenterListener {
     private openChatIcon!: OpenChatIcon;
     private playerName!: string;
     private characterLayers!: string[];
+    private companion!: string|null;
     private messageSubscription: Subscription|null = null;
     private popUpElements : Map<number, DOMElement> = new Map<number, Phaser.GameObjects.DOMElement>();
 
@@ -335,7 +337,7 @@ export class GameScene extends ResizableScene implements CenterListener {
         }
         this.playerName = playerName;
         this.characterLayers = gameManager.getCharacterLayers();
-
+        this.companion = gameManager.getCompanion();
 
         //initalise map
         this.Map = this.add.tilemap(this.MapUrlFile);
@@ -459,7 +461,9 @@ export class GameScene extends ResizableScene implements CenterListener {
                 top: camera.scrollY,
                 right: camera.scrollX + camera.width,
                 bottom: camera.scrollY + camera.height,
-            }).then((onConnect: OnConnectInterface) => {
+            },
+            this.companion
+            ).then((onConnect: OnConnectInterface) => {
             this.connection = onConnect.connection;
 
             this.connection.onUserJoins((message: MessageUserJoined) => {
@@ -467,7 +471,8 @@ export class GameScene extends ResizableScene implements CenterListener {
                     userId: message.userId,
                     characterLayers: message.characterLayers,
                     name: message.name,
-                    position: message.position
+                    position: message.position,
+                    companion: message.companion
                 }
                 this.addPlayer(userMessage);
             });
@@ -853,6 +858,11 @@ ${escapedMessage}
     private removeAllRemotePlayers(): void {
         this.MapPlayersByKey.forEach((player: RemotePlayer) => {
             player.destroy();
+
+            if (player.companion) {
+                player.companion.destroy();
+            }
+
             this.MapPlayers.remove(player);
         });
         this.MapPlayersByKey = new Map<number, RemotePlayer>();
@@ -1023,7 +1033,9 @@ ${escapedMessage}
                 texturesPromise,
                 PlayerAnimationDirections.Down,
                 false,
-                this.userInputManager
+                this.userInputManager,
+                this.companion,
+                this.companion !== null ? lazyLoadCompanionResource(this.load, this.companion) : undefined
             );
         }catch (err){
             if(err instanceof TextureError) {
@@ -1215,7 +1227,9 @@ ${escapedMessage}
             addPlayerData.name,
             texturesPromise,
             addPlayerData.position.direction as PlayerAnimationDirections,
-            addPlayerData.position.moving
+            addPlayerData.position.moving,
+            addPlayerData.companion,
+            addPlayerData.companion !== null ? lazyLoadCompanionResource(this.load, addPlayerData.companion) : undefined
         );
         this.MapPlayers.add(player);
         this.MapPlayersByKey.set(player.userId, player);
@@ -1238,6 +1252,11 @@ ${escapedMessage}
             console.error('Cannot find user with id ', userId);
         } else {
             player.destroy();
+
+            if (player.companion) {
+                player.companion.destroy();
+            }
+
             this.MapPlayers.remove(player);
         }
         this.MapPlayersByKey.delete(userId);
