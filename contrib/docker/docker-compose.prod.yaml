@@ -10,10 +10,10 @@ services:
       - --entrypoints.web.http.redirections.entryPoint.to=websecure
       - --entrypoints.web.http.redirections.entryPoint.scheme=https
       - --entryPoints.websecure.address=:443
-      - --certificatesresolvers.myresolver.acme.email=${ACME_EMAIL}
-      - --certificatesresolvers.myresolver.acme.storage=/acme.json
+      - --certificatesresolvers.myhttpchallenge.acme.email=${ACME_EMAIL}
+      - --certificatesresolvers.myhttpchallenge.acme.storage=/acme.json
       # used during the challenge
-      - --certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.myhttpchallenge.acme.httpchallenge.entrypoint=web
     ports:
       - "80:80"
       - "443:443"
@@ -50,7 +50,7 @@ services:
       - "traefik.http.routers.front-ssl.entryPoints=websecure"
       - "traefik.http.routers.front-ssl.tls=true"
       - "traefik.http.routers.front-ssl.service=front"
-      - "traefik.http.routers.front-ssl.tls.certresolver=myresolver"
+      - "traefik.http.routers.front-ssl.tls.certresolver=myhttpchallenge"
     restart: unless-stopped
 
   pusher:
@@ -65,6 +65,7 @@ services:
       API_URL: back:50051
       JITSI_URL: $JITSI_URL
       JITSI_ISS: $JITSI_ISS
+      FEDERATE_PUSHER: $FEDERATE_PUSHER
     labels:
       - "traefik.http.routers.pusher.rule=Host(`pusher.${DOMAIN}`)"
       - "traefik.http.routers.pusher.entryPoints=web,traefik"
@@ -73,7 +74,7 @@ services:
       - "traefik.http.routers.pusher-ssl.entryPoints=websecure"
       - "traefik.http.routers.pusher-ssl.tls=true"
       - "traefik.http.routers.pusher-ssl.service=pusher"
-      - "traefik.http.routers.pusher-ssl.tls.certresolver=myresolver"
+      - "traefik.http.routers.pusher-ssl.tls.certresolver=myhttpchallenge"
     restart: unless-stopped
 
   back:
@@ -96,5 +97,6 @@ services:
       - "traefik.http.routers.back-ssl.entryPoints=websecure"
       - "traefik.http.routers.back-ssl.tls=true"
       - "traefik.http.routers.back-ssl.service=back"
-      - "traefik.http.routers.back-ssl.tls.certresolver=myresolver"
+      - "traefik.http.routers.back-ssl.tls.certresolver=myhttpchallenge"
     restart: unless-stopped
+    
