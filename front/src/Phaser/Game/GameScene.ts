@@ -71,6 +71,7 @@ import {Subscription} from "rxjs";
 import {worldFullMessageStream} from "../../Connexion/WorldFullMessageStream";
 import { lazyLoadCompanionResource } from "../Companion/CompanionTexturesLoadingManager";
 import { InteractiveLayer } from "../Map/InteractiveLayer";
+import AnimatedTiles from "phaser-animated-tiles";
 
 export interface GameSceneInitInterface {
     initPosition: PointInterface|null,
@@ -115,10 +116,11 @@ export class GameScene extends ResizableScene implements CenterListener {
     MapPlayers!: Phaser.Physics.Arcade.Group;
     MapPlayersByKey : Map<number, RemotePlayer> = new Map<number, RemotePlayer>();
     Map!: Phaser.Tilemaps.Tilemap;
-    Layers!: Array<Phaser.Tilemaps.StaticTilemapLayer>;
+    Layers!: Array<Phaser.Tilemaps.TilemapLayer>;
     interactiveLayers!: Array<InteractiveLayer>;
     Objects!: Array<Phaser.Physics.Arcade.Sprite>;
     mapFile!: ITiledMap;
+    animatedTiles!: AnimatedTiles;
     groups: Map<number, Sprite>;
     startX!: number;
     startY!: number;
@@ -213,6 +215,7 @@ export class GameScene extends ResizableScene implements CenterListener {
                 message: file.src
             });
         });
+        this.load.scenePlugin('AnimatedTiles', AnimatedTiles, 'animatedTiles', 'animatedTiles');
         this.load.on('filecomplete-tilemapJSON-'+this.MapUrlFile, (key: string, type: string, data: unknown) => {
             this.onMapLoad(data);
         });
@@ -355,14 +358,14 @@ export class GameScene extends ResizableScene implements CenterListener {
         this.physics.world.setBounds(0, 0, this.Map.widthInPixels, this.Map.heightInPixels);
 
         //add layer on map
-        this.Layers = new Array<Phaser.Tilemaps.StaticTilemapLayer>();
+        this.Layers = new Array<Phaser.Tilemaps.TilemapLayer>();
         this.interactiveLayers = new Array<InteractiveLayer>();
 
         let depth = -2;
         for (const layer of this.mapFile.layers) {
             if (layer.type === 'tilelayer') {
                 if (this.isLayerInteractive(layer) === false) {
-                    this.addLayer(this.Map.createStaticLayer(layer.name, this.Terrains, 0, 0).setDepth(depth));
+                    this.addLayer(this.Map.createLayer(layer.name, this.Terrains, 0, 0).setDepth(depth));
 
                     const exitSceneUrl = this.getExitSceneUrl(layer);
                     if (exitSceneUrl !== undefined) {
@@ -402,6 +405,7 @@ export class GameScene extends ResizableScene implements CenterListener {
 
         this.initCamera();
 
+        this.animatedTiles.init(this.Map);
         this.initCirclesCanvas();
 
         // Let's pause the scene if the connection is not established yet
@@ -1013,7 +1017,7 @@ ${escapedMessage}
         this.cameras.main.setZoom(ZOOM_LEVEL);
     }
 
-    addLayer(Layer : Phaser.Tilemaps.StaticTilemapLayer){
+    addLayer(Layer : Phaser.Tilemaps.TilemapLayer){
         this.Layers.push(Layer);
     }
 
@@ -1027,7 +1031,7 @@ ${escapedMessage}
 
     createCollisionWithPlayer() {
         //add collision layer
-        this.Layers.forEach((Layer: Phaser.Tilemaps.StaticTilemapLayer) => {
+        this.Layers.forEach((Layer: Phaser.Tilemaps.TilemapLayer) => {
             this.physics.add.collider(this.CurrentPlayer, Layer, (object1: GameObject, object2: GameObject) => {
                 //this.CurrentPlayer.say("Collision with layer : "+ (object2 as Tile).layer.name)
             });
