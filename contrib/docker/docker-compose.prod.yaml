@@ -41,6 +41,7 @@ services:
       TURN_SERVER: "${TURN_SERVER}"
       TURN_USER: "${TURN_USER}"
       TURN_PASSWORD: "${TURN_PASSWORD}"
+      STUN_SERVER: "${STUN_SERVER}"
       START_ROOM_URL: "${START_ROOM_URL}"
     labels:
       - "traefik.http.routers.front.rule=Host(`${DOMAIN}`)"
