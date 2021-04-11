@@ -70,6 +70,20 @@ export const getRessourceDescriptor = (textureKey: string|BodyResourceDescriptio
     throw 'Could not find a data for texture '+textureName;
 }
 
+export const createShadowTexturePromise = (load: LoaderPlugin) => {
+    const key = 'character-shadow';
+    const path = 'resources/characters/shadow.png';
+
+    return new Promise(resolve => {
+        if (load.textureManager.exists(key)) {
+            return resolve(key);
+        }
+
+        load.image(key, path);
+        load.once(key, () => resolve(key));
+    });
+};
+
 const createLoadingPromise = (loadPlugin: LoaderPlugin, playerResourceDescriptor: BodyResourceDescriptionInterface) => {
     return new Promise<BodyResourceDescriptionInterface>((res) => {
         if (loadPlugin.textureManager.exists(playerResourceDescriptor.name)) {
