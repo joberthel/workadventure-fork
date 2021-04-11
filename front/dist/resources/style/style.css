@@ -500,6 +500,7 @@ input[type=range]:focus::-ms-fill-upper {
 .game-overlay {
     display: none;
     position: absolute;
+    z-index: 1;
     width: 100%;
     height: 100%;
     /* TODO: DO WE NEED FLEX HERE???? WE WANT A SIDEBAR OF EXACTLY 25% (note: flex useful for direction!!!) */
