@@ -41,5 +41,7 @@ export class RemotePlayer extends Character {
         if (this.companion) {
             this.companion.setTarget(position.x, position.y, position.direction as PlayerAnimationDirections);
         }
+        
+        this.updateShadow(position.direction as PlayerAnimationDirections);
     }
 }

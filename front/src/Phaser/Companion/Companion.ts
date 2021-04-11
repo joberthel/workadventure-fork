@@ -22,6 +22,7 @@ export class Companion extends Container {
     private companionName: string;
     private direction: PlayerAnimationDirections;
     private animationType: PlayerAnimationTypes;
+    private shadow: Sprite;
 
     constructor(scene: Phaser.Scene, x: number, y: number, name: string, texturePromise: Promise<string>) {
         super(scene, x + 14, y + 4);
@@ -41,6 +42,11 @@ export class Companion extends Container {
             this.addResource(resource);
             this.invisible = false;
         })
+
+        this.shadow = new Sprite(scene, 0, 14, 'character-shadow');
+        this.shadow.setOrigin(0.5);
+        this.shadow.setAlpha(.65);
+        this.add(this.shadow);
 
         this.scene.physics.world.enableBody(this);
 
@@ -107,6 +113,17 @@ export class Companion extends Container {
         
         this.setDepth(this.y);
         this.playAnimation(this.direction, this.animationType);
+        this.updateShadow(this.direction);
+    }
+
+    private updateShadow(direction: PlayerAnimationDirections): void {
+        if (direction === PlayerAnimationDirections.Left) {
+            this.shadow.setOrigin(.4, .5);
+        } else if (direction === PlayerAnimationDirections.Right) {
+            this.shadow.setOrigin(.6, .5);
+        } else {
+            this.shadow.setOrigin(.5);
+        }
     }
 
     public getStatus(): CompanionStatus {
@@ -214,6 +231,7 @@ export class Companion extends Container {
 
         if (this.scene) {
             this.scene.events.removeListener('update', this.updateListener);
+            this.scene.sys.updateList.remove(this.shadow);
         }
 
         super.destroy();

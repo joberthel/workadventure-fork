@@ -80,5 +80,7 @@ export class Player extends Character implements CurrentGamerInterface {
             this.previousDirection = direction;
         }
         this.wasMoving = moving;
+
+        this.updateShadow(direction || this.previousDirection as PlayerAnimationDirections);
     }
 }

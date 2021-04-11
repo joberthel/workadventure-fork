@@ -17,6 +17,7 @@ interface AnimationData {
 export abstract class Character extends Container {
     private bubble: SpeechBubble|null = null;
     private readonly playerName: BitmapText;
+    private playerShadow: Sprite;
     public PlayerValue: string;
     public sprites: Map<string, Sprite>;
     private lastDirection: PlayerAnimationDirections = PlayerAnimationDirections.Down;
@@ -57,6 +58,10 @@ export abstract class Character extends Container {
         this.playerName = new BitmapText(scene, 0,  - 25, 'main_font', name, 7);
         this.playerName.setOrigin(0.5).setCenterAlign().setDepth(99999);
         this.add(this.playerName);
+
+        this.playerShadow = new Sprite(scene, 0, 14, 'character-shadow');
+        this.playerShadow.setOrigin(0.5);
+        this.add(this.playerShadow);
 
         scene.add.existing(this);
 
@@ -219,12 +224,27 @@ export abstract class Character extends Container {
         }, 3000)
     }
 
+    public updateShadow(direction: PlayerAnimationDirections): void {
+        if (direction === PlayerAnimationDirections.Left) {
+            this.playerShadow.setOrigin(.4, .5);
+        } else if (direction === PlayerAnimationDirections.Right) {
+            this.playerShadow.setOrigin(.55, .5);
+        } else {
+            this.playerShadow.setOrigin(.5);
+        }
+    }
+
     destroy(): void {
         for (const sprite of this.sprites.values()) {
             if(this.scene) {
                 this.scene.sys.updateList.remove(sprite);
             }
         }
+
+        if (this.scene) {
+            this.scene.sys.updateList.remove(this.playerShadow);
+        }
+
         super.destroy();
         this.playerName.destroy();
     }
