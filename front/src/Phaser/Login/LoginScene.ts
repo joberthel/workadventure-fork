@@ -9,7 +9,7 @@ import {ResizableScene} from "./ResizableScene";
 export const LoginSceneName = "LoginScene";
 enum LoginTextures {
     icon = "icon",
-    mainFont = "main_font"
+    mainFont = "pixelmix"
 }
 
 export class LoginScene extends ResizableScene {
@@ -30,8 +30,8 @@ export class LoginScene extends ResizableScene {
     preload() {
         //this.load.image(LoginTextures.playButton, "resources/objects/play_button.png");
         this.load.image(LoginTextures.icon, "resources/logos/tcm_full.png");
-        // Note: arcade.png from the Phaser 3 examples at: https://github.com/photonstorm/phaser3-examples/tree/master/public/assets/fonts/bitmap
-        this.load.bitmapFont(LoginTextures.mainFont, 'resources/fonts/arcade.png', 'resources/fonts/arcade.xml');
+        // Note: pixelmix.png from the Phaser 3 examples at: https://github.com/photonstorm/phaser3-examples/tree/master/public/assets/fonts/bitmap
+        this.load.bitmapFont(LoginTextures.mainFont, 'resources/fonts/pixelmix.png', 'resources/fonts/pixelmix.xml');
     }
 
     create() {

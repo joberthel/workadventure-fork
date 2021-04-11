@@ -14,7 +14,7 @@ export const SelectCompanionSceneName = "SelectCompanionScene";
 enum LoginTextures {
     playButton = "play_button",
     icon = "icon",
-    mainFont = "main_font"
+    mainFont = "pixelmix"
 }
 
 export class SelectCompanionScene extends ResizableScene {
@@ -45,8 +45,8 @@ export class SelectCompanionScene extends ResizableScene {
         this.load.image(LoginTextures.icon, "resources/logos/tcm_full.png");
         this.load.image(LoginTextures.playButton, "resources/objects/play_button.png");
 
-        // Note: arcade.png from the Phaser 3 examples at: https://github.com/photonstorm/phaser3-examples/tree/master/public/assets/fonts/bitmap
-        this.load.bitmapFont(LoginTextures.mainFont, 'resources/fonts/arcade.png', 'resources/fonts/arcade.xml');
+        // Note: pixelmix.png from the Phaser 3 examples at: https://github.com/photonstorm/phaser3-examples/tree/master/public/assets/fonts/bitmap
+        this.load.bitmapFont(LoginTextures.mainFont, 'resources/fonts/pixelmix.png', 'resources/fonts/pixelmix.xml');
 
         addLoader(this);
     }

@@ -5,7 +5,7 @@ import Sprite = Phaser.GameObjects.Sprite;
 export const ReconnectingSceneName = "ReconnectingScene";
 enum ReconnectingTextures {
     icon = "icon",
-    mainFont = "main_font"
+    mainFont = "pixelmix"
 }
 
 export class ReconnectingScene extends Phaser.Scene {
@@ -20,8 +20,8 @@ export class ReconnectingScene extends Phaser.Scene {
 
     preload() {
         this.load.image(ReconnectingTextures.icon, "resources/logos/tcm_full.png");
-        // Note: arcade.png from the Phaser 3 examples at: https://github.com/photonstorm/phaser3-examples/tree/master/public/assets/fonts/bitmap
-        this.load.bitmapFont(ReconnectingTextures.mainFont, 'resources/fonts/arcade.png', 'resources/fonts/arcade.xml');
+        // Note: pixelmix.png from the Phaser 3 examples at: https://github.com/photonstorm/phaser3-examples/tree/master/public/assets/fonts/bitmap
+        this.load.bitmapFont(ReconnectingTextures.mainFont, 'resources/fonts/pixelmix.png', 'resources/fonts/pixelmix.xml');
         this.load.spritesheet(
             'cat',
             'resources/characters/pipoya/Cat 01-1.png',

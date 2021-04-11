@@ -17,7 +17,7 @@ export const CustomizeSceneName = "CustomizeScene";
 enum CustomizeTextures{
     icon = "icon",
     arrowRight = "arrow_right",
-    mainFont = "main_font",
+    mainFont = "pixelmix",
     arrowUp = "arrow_up",
 }
 
@@ -63,7 +63,7 @@ export class CustomizeScene extends AbstractCharacterScene {
         this.load.image(CustomizeTextures.arrowRight, "resources/objects/arrow_right.png");
         this.load.image(CustomizeTextures.icon, "resources/logos/tcm_full.png");
         this.load.image(CustomizeTextures.arrowUp, "resources/objects/arrow_up.png");
-        this.load.bitmapFont(CustomizeTextures.mainFont, 'resources/fonts/arcade.png', 'resources/fonts/arcade.xml');
+        this.load.bitmapFont(CustomizeTextures.mainFont, 'resources/fonts/pixelmix.png', 'resources/fonts/pixelmix.xml');
     }
 
     create() {

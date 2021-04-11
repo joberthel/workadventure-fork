@@ -229,7 +229,8 @@ export class GameScene extends ResizableScene implements CenterListener {
         }
 
         this.load.spritesheet('layout_modes', 'resources/objects/layout_modes.png', {frameWidth: 32, frameHeight: 32});
-        this.load.bitmapFont('main_font', 'resources/fonts/arcade.png', 'resources/fonts/arcade.xml');
+
+        this.load.bitmapFont('pixelmix', 'resources/fonts/pixelmix.png', 'resources/fonts/pixelmix.xml');
 
         createShadowTexturePromise(this.load);
 

@@ -11,7 +11,7 @@ export const EnableCameraSceneName = "EnableCameraScene";
 enum LoginTextures {
     playButton = "play_button",
     icon = "icon",
-    mainFont = "main_font",
+    mainFont = "pixelmix",
     arrowRight = "arrow_right",
     arrowUp = "arrow_up"
 }
@@ -47,8 +47,8 @@ export class EnableCameraScene extends Phaser.Scene {
         this.load.image(LoginTextures.icon, "resources/logos/tcm_full.png");
         this.load.image(LoginTextures.arrowRight, "resources/objects/arrow_right.png");
         this.load.image(LoginTextures.arrowUp, "resources/objects/arrow_up.png");
-        // Note: arcade.png from the Phaser 3 examples at: https://github.com/photonstorm/phaser3-examples/tree/master/public/assets/fonts/bitmap
-        this.load.bitmapFont(LoginTextures.mainFont, 'resources/fonts/arcade.png', 'resources/fonts/arcade.xml');
+        // Note: pixelmix.png from the Phaser 3 examples at: https://github.com/photonstorm/phaser3-examples/tree/master/public/assets/fonts/bitmap
+        this.load.bitmapFont(LoginTextures.mainFont, 'resources/fonts/pixelmix.png', 'resources/fonts/pixelmix.xml');
     }
 
     create() {

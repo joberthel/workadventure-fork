@@ -4,7 +4,7 @@ export class TextInput extends Phaser.GameObjects.BitmapText {
     private underLine: Phaser.GameObjects.Text;
 
     constructor(scene: Phaser.Scene, x: number, y: number, maxLength: number, text: string, onChange: (text: string) => void) {
-        super(scene, x, y, 'main_font', text, 32);
+        super(scene, x, y, 'pixelmix', text, 32);
         this.setOrigin(0.5).setCenterAlign()
         this.scene.add.existing(this);
 
