@@ -37,11 +37,11 @@ export class LoginScene extends ResizableScene {
     create() {
 
         this.textField = new TextField(this, this.game.renderer.width / 2, 50, 'Enter your name:');
-        this.nameInput = new TextInput(this, this.game.renderer.width / 2, 70, 8, this.name,(text: string) => {
+        this.nameInput = new TextInput(this, this.game.renderer.width / 2, 70, 12, this.name,(text: string) => {
             this.name = text;
         });
 
-        this.pressReturnField = new TextField(this, this.game.renderer.width / 2, 130, 'Press enter to start');
+        this.pressReturnField = new TextField(this, this.game.renderer.width / 2, 130, 'PRESS ENTER TO START');
 
         this.logo = new Image(this, this.game.renderer.width - 30, this.game.renderer.height - 20, LoginTextures.icon);
         this.add.existing(this.logo);

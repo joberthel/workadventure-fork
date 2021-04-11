@@ -4,11 +4,11 @@ export class TextInput extends Phaser.GameObjects.BitmapText {
     private underLine: Phaser.GameObjects.Text;
 
     constructor(scene: Phaser.Scene, x: number, y: number, maxLength: number, text: string, onChange: (text: string) => void) {
-        super(scene, x, y, 'pixelmix', text, 32);
+        super(scene, x, y, 'pixelmix', text, 24);
         this.setOrigin(0.5).setCenterAlign()
         this.scene.add.existing(this);
 
-        this.underLine = this.scene.add.text(x, y+1, this.getUnderLineBody(text.length), { fontFamily: 'Arial', fontSize: "32px", color: '#ffffff'})
+        this.underLine = this.scene.add.text(x, y+1, this.getUnderLineBody(text.length), { fontFamily: 'Arial', fontSize: "28px", color: '#ffffff'})
         this.underLine.setOrigin(0.5)
 
 

@@ -69,7 +69,7 @@ export class SelectCharacterScene extends AbstractCharacterScene {
             this,
             this.game.renderer.width / 2,
             90 + 32 * Math.ceil( this.playerModels.length / this.nbCharactersPerRow) + 40,
-            'Press enter to start');
+            'PRESS ENTER TO START');
 
         const rectangleXStart = this.game.renderer.width / 2 - (this.nbCharactersPerRow / 2) * 32 + 16;
 
