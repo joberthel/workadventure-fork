@@ -15,7 +15,7 @@ export function isUserNameValid(value: string): boolean {
 }
 
 export function areCharacterLayersValid(value: string[]): boolean {
-    if (!value.length) return false;
+    if (value === null || !value.length) return false;
     for (let i = 0; i < value.length; i++) {
         if (/^\w+$/.exec(value[i]) === null) {
             return false;

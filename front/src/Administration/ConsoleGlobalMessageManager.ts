@@ -165,7 +165,7 @@ export class ConsoleGlobalMessageManager {
             // Start loading CSS
             const cssPromise = ConsoleGlobalMessageManager.loadCss();
             // Import quill
-            const Quill:any = await import("quill"); // eslint-disable-line @typescript-eslint/no-explicit-any
+            const Quill:any = (await import("quill")).default; // eslint-disable-line @typescript-eslint/no-explicit-any
             // Wait for CSS to be loaded
             await cssPromise;
 
