@@ -1,4 +1,4 @@
-import {LocalUser} from "./LocalUser";
+import {areCharacterLayersValid, isUserNameValid, LocalUser} from "./LocalUser";
 
 const playerNameKey =           'playerName';
 const selectedPlayerKey =       'selectedPlayer';
@@ -23,8 +23,9 @@ class LocalUserStore {
     setName(name:string): void {
         localStorage.setItem(playerNameKey, name);
     }
-    getName(): string {
-        return localStorage.getItem(playerNameKey) || '';
+    getName(): string|null {
+        const value = localStorage.getItem(playerNameKey) || '';
+        return isUserNameValid(value) ? value : null;
     }
 
     setPlayerCharacterIndex(playerCharacterIndex: number): void {
@@ -45,7 +46,8 @@ class LocalUserStore {
         localStorage.setItem(characterLayersKey, JSON.stringify(layers));
     }
     getCharacterLayers(): string[]|null {
-        return JSON.parse(localStorage.getItem(characterLayersKey) || "null");
+        const value = JSON.parse(localStorage.getItem(characterLayersKey) || "null");
+        return areCharacterLayersValid(value) ? value : null;
     }
 
     setCompanion(companion: string|null): void {
