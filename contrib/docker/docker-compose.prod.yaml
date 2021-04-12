@@ -43,6 +43,7 @@ services:
       TURN_PASSWORD: "${TURN_PASSWORD}"
       STUN_SERVER: "${STUN_SERVER}"
       START_ROOM_URL: "${START_ROOM_URL}"
+      MAX_USERNAME_LENGTH: "${MAX_USERNAME_LENGTH}"
     labels:
       - "traefik.http.routers.front.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.front.entryPoints=web,traefik"
