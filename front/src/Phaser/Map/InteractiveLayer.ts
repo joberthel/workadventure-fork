@@ -36,7 +36,7 @@ export class InteractiveLayer extends Container {
 
         super(scene, x, y);
 
-        this.lastUpdate = 0;
+        this.lastUpdate = (new Date).getMilliseconds();
         this.allActive = false;
         this.layer = layer;
         this.spritesCollection = [];
@@ -57,8 +57,8 @@ export class InteractiveLayer extends Container {
      * @returns {void}
      */
     public update(time: number, delta: number): void {
-        // limit this function to max. 15 times per second should be enough
-        if (this.lastUpdate + (1000 / 15) > time) {
+        // limit this function to max. 4 times per second should be enough
+        if (this.lastUpdate + (1000 / 4) > time) {
             return;
         }
 
