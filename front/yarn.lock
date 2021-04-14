@@ -1824,7 +1824,7 @@ eventemitter3@^3.1.2:
   resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-3.1.2.tgz#2d3d48f9c346698fce83a85d7d664e98535df6e7"
   integrity sha512-tvtQIeLVHjDkJYnzf2dgVMxfuSGJeM/7UCG17TT4EumTfNtF+0nebF/4zWOIkCreAbtNqhGEboB6BWrwqNaw4Q==
 
-eventemitter3@^4.0.0, eventemitter3@^4.0.4:
+eventemitter3@^4.0.0, eventemitter3@^4.0.7:
   version "4.0.7"
   resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-4.0.7.tgz#2de9b68f6528d5644ef5c59526a1b4a07306169f"
   integrity sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==
@@ -3748,6 +3748,10 @@ pbkdf2@^3.0.3:
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
 
+phaser-animated-tiles@Informatic/phaser-animated-tiles#2d5c66a9bc426dd4cb2d856c1d599494a74f8067:
+  version "2.0.2"
+  resolved "https://codeload.github.com/Informatic/phaser-animated-tiles/tar.gz/2d5c66a9bc426dd4cb2d856c1d599494a74f8067"
+
 phaser3-rex-plugins@^1.1.42:
   version "1.1.44"
   resolved "https://registry.yarnpkg.com/phaser3-rex-plugins/-/phaser3-rex-plugins-1.1.44.tgz#83588ab2801c5b3a80a18be4f0ae37f1f32096b0"
@@ -3758,10 +3762,10 @@ phaser3-rex-plugins@^1.1.42:
     papaparse "^5.3.0"
     webfontloader "^1.6.28"
 
-phaser@3.24.1:
-  version "3.24.1"
-  resolved "https://registry.yarnpkg.com/phaser/-/phaser-3.24.1.tgz#376e0c965d2a35af37c06ee78627dafbde5be017"
-  integrity sha512-WbrRMkbpEzarkfrq83akeauc6b8xNxsOTpDygyW7wrU2G2ne6kOYu3hji4UAaGnZaOLrVuj8ycYPjX9P1LxcDw==
+phaser@3.54.0:
+  version "3.54.0"
+  resolved "https://registry.yarnpkg.com/phaser/-/phaser-3.54.0.tgz#46b191e46059aab2a9a57f78525c60b595767eee"
+  integrity sha512-/1XVI6J2siS0OGwJez7vLbRjars1zb//EvJdYMVyd3wNTUf5DHrvYUj1f6TsEISr4vjnbrNtS66QIuPbGU8x6A==
   dependencies:
     eventemitter3 "^4.0.7"
     path "^0.12.7"
