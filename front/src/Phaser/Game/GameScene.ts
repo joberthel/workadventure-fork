@@ -10,7 +10,14 @@ import {
     RoomJoinedMessageInterface
 } from "../../Connexion/ConnexionModels";
 import {CurrentGamerInterface, hasMovedEventName, Player} from "../Player/Player";
-import {DEBUG_MODE, JITSI_PRIVATE_MODE, POSITION_DELAY, RESOLUTION, ZOOM_LEVEL} from "../../Enum/EnvironmentVariable";
+import {
+    DEBUG_MODE,
+    JITSI_PRIVATE_MODE,
+    MAX_PER_GROUP,
+    POSITION_DELAY,
+    RESOLUTION,
+    ZOOM_LEVEL
+} from "../../Enum/EnvironmentVariable";
 import {ITiledMap, ITiledMapLayer, ITiledMapLayerProperty, ITiledMapObject, ITiledTileSet} from "../Map/ITiledMap";
 import {AddPlayerInterface} from "./AddPlayerInterface";
 import {PlayerAnimationDirections} from "../Player/Animation";
@@ -51,10 +58,6 @@ import {Room} from "../../Connexion/Room";
 import {jitsiFactory} from "../../WebRtc/JitsiFactory";
 import {urlManager} from "../../Url/UrlManager";
 import {audioManager} from "../../WebRtc/AudioManager";
-import {IVirtualJoystick} from "../../types";
-const {
-  default: VirtualJoystick,
-} = require("phaser3-rex-plugins/plugins/virtualjoystick.js");
 import {PresentationModeIcon} from "../Components/PresentationModeIcon";
 import {ChatModeIcon} from "../Components/ChatModeIcon";
 import {OpenChatIcon, openChatIconName} from "../Components/OpenChatIcon";
@@ -76,6 +79,9 @@ import {worldFullMessageStream} from "../../Connexion/WorldFullMessageStream";
 import { lazyLoadCompanionResource } from "../Companion/CompanionTexturesLoadingManager";
 import { InteractiveLayer } from "../Map/InteractiveLayer";
 import AnimatedTiles from "phaser-animated-tiles";
+import {touchScreenManager} from "../../Touch/TouchScreenManager";
+import {PinchManager} from "../UserInput/PinchManager";
+import {joystickBaseImg, joystickBaseKey, joystickThumbImg, joystickThumbKey} from "../Components/MobileJoystick";
 
 export interface GameSceneInitInterface {
     initPosition: PointInterface|null,
@@ -142,7 +148,7 @@ export class GameScene extends ResizableScene implements CenterListener {
     // A promise that will resolve when the "create" method is called (signaling loading is ended)
     private createPromise: Promise<void>;
     private createPromiseResolve!: (value?: void | PromiseLike<void>) => void;
-
+    private iframeSubscriptionList! : Array<Subscription>;
     MapUrlFile: string;
     RoomId: string;
     instance: string;
@@ -172,7 +178,6 @@ export class GameScene extends ResizableScene implements CenterListener {
     private messageSubscription: Subscription|null = null;
     private popUpElements : Map<number, DOMElement> = new Map<number, Phaser.GameObjects.DOMElement>();
     private originalMapUrl: string|undefined;
-    public virtualJoystick!: IVirtualJoystick;
 
     constructor(private room: Room, MapUrlFile: string, customKey?: string|undefined) {
         super({
@@ -196,6 +201,7 @@ export class GameScene extends ResizableScene implements CenterListener {
 
     //hook preload scene
     preload(): void {
+        addLoader(this);
         const localUser = localUserStore.getLocalUser();
         const textures = localUser?.textures;
         if (textures) {
@@ -205,6 +211,10 @@ export class GameScene extends ResizableScene implements CenterListener {
         }
 
         this.load.image(openChatIconName, 'resources/objects/talk.png');
+        if (touchScreenManager.supportTouchScreen) {
+            this.load.image(joystickBaseKey, joystickBaseImg);
+            this.load.image(joystickThumbKey, joystickThumbImg);
+        }
         this.load.on(FILE_LOAD_ERROR, (file: {src: string}) => {
             // If we happen to be in HTTP and we are trying to load a URL in HTTPS only... (this happens only in dev environments)
             if (window.location.protocol === 'http:' && file.src === this.MapUrlFile && file.src.startsWith('http:') && this.originalMapUrl === undefined) {
@@ -359,6 +369,10 @@ export class GameScene extends ResizableScene implements CenterListener {
         urlManager.pushRoomIdToUrl(this.room);
         this.startLayerName = urlManager.getStartLayerNameFromUrl();
 
+        if (touchScreenManager.supportTouchScreen) {
+            new PinchManager(this);
+        }
+
         this.messageSubscription = worldFullMessageStream.stream.subscribe((message) => this.showWorldFullError())
 
         const playerName = gameManager.getPlayerName();
@@ -418,26 +432,10 @@ export class GameScene extends ResizableScene implements CenterListener {
         //initialise list of other player
         this.MapPlayers = this.physics.add.group({immovable: true});
 
-        this.virtualJoystick = new VirtualJoystick(this, {
-            x: this.game.renderer.width / 2,
-            y: this.game.renderer.height / 2,
-            radius: 20,
-            base: this.add.circle(0, 0, 20),
-            thumb: this.add.circle(0, 0, 10),
-            enable: true,
-            dir: "8dir",
-        });
-        this.virtualJoystick.visible = true;
+        
         //create input to move
         mediaManager.setUserInputManager(this.userInputManager);
-        this.userInputManager = new UserInputManager(this, this.virtualJoystick);
-
-        // Listener event to reposition virtual joystick
-        // whatever place you click in game area
-        this.input.on('pointerdown', (pointer: { x: number; y: number; }) => {
-            this.virtualJoystick.x = pointer.x;
-            this.virtualJoystick.y = pointer.y;
-        });
+        this.userInputManager = new UserInputManager(this);
 
         if (localUserStore.getFullscreen()) {
             document.querySelector('body')?.requestFullscreen();
@@ -483,9 +481,10 @@ export class GameScene extends ResizableScene implements CenterListener {
         this.openChatIcon = new OpenChatIcon(this, 2, this.game.renderer.height - 2)
 
         // FIXME: change this to use the UserInputManager class for input
-        this.input.keyboard.on('keyup-M', () => {
+        // FIXME: Comment this feature because when user write M key in report input, the layout change.
+        /*this.input.keyboard.on('keyup-M', () => {
             this.switchLayoutMode();
-        });
+        });*/
 
         this.reposition();
 
@@ -779,7 +778,8 @@ export class GameScene extends ResizableScene implements CenterListener {
     }
 
     private listenToIframeEvents(): void {
-        iframeListener.openPopupStream.subscribe((openPopupEvent) => {
+            this.iframeSubscriptionList = [];
+            this.iframeSubscriptionList.push(iframeListener.openPopupStream.subscribe((openPopupEvent) => {
 
             let  objectLayerSquare : ITiledMapObject;
             const targetObjectData = this.getObjectLayerData(openPopupEvent.targetObject);
@@ -823,7 +823,6 @@ ${escapedMessage}
                 }
                 id++;
             }
-
             this.tweens.add({
                 targets     : domElement ,
                 scale       : 1,
@@ -832,9 +831,9 @@ ${escapedMessage}
             });
 
             this.popUpElements.set(openPopupEvent.popupId, domElement);
-        });
+        }));
 
-        iframeListener.closePopupStream.subscribe((closePopupEvent) => {
+       this.iframeSubscriptionList.push(iframeListener.closePopupStream.subscribe((closePopupEvent) => {
             const popUpElement = this.popUpElements.get(closePopupEvent.popupId);
             if (popUpElement === undefined) {
                 console.error('Could not close popup with ID ', closePopupEvent.popupId,'. Maybe it has already been closed?');
@@ -850,23 +849,25 @@ ${escapedMessage}
                     this.popUpElements.delete(closePopupEvent.popupId);
                 },
             });
-        });
+        }));
 
-        iframeListener.disablePlayerControlStream.subscribe(()=>{
+       this.iframeSubscriptionList.push(iframeListener.disablePlayerControlStream.subscribe(()=>{
             this.userInputManager.disableControls();
-        })
-        iframeListener.enablePlayerControlStream.subscribe(()=>{
+        }));
+
+       this.iframeSubscriptionList.push(iframeListener.enablePlayerControlStream.subscribe(()=>{
             this.userInputManager.restoreControls();
-        })
+        }));
         let scriptedBubbleSprite : Sprite;
-        iframeListener.displayBubbleStream.subscribe(()=>{
+       this.iframeSubscriptionList.push(iframeListener.displayBubbleStream.subscribe(()=>{
             scriptedBubbleSprite = new Sprite(this,this.CurrentPlayer.x + 25,this.CurrentPlayer.y,'circleSprite-white');
             scriptedBubbleSprite.setDisplayOrigin(48, 48);
             this.add.existing(scriptedBubbleSprite);
-        })
-        iframeListener.removeBubbleStream.subscribe(()=>{
+        }));
+
+       this.iframeSubscriptionList.push(iframeListener.removeBubbleStream.subscribe(()=>{
             scriptedBubbleSprite.destroy();
-        })
+        }));
 
     }
 
@@ -911,6 +912,10 @@ ${escapedMessage}
         this.simplePeer.closeAllConnections();
         this.simplePeer?.unregister();
         this.messageSubscription?.unsubscribe();
+
+        for(const iframeEvents of this.iframeSubscriptionList){
+            iframeEvents.unsubscribe();
+        }
     }
 
     private removeAllRemotePlayers(): void {
@@ -1371,7 +1376,7 @@ ${escapedMessage}
             this,
             Math.round(groupPositionMessage.position.x),
             Math.round(groupPositionMessage.position.y),
-            groupPositionMessage.groupSize === 4 ? 'circleSprite-red' : 'circleSprite-white'
+            groupPositionMessage.groupSize === MAX_PER_GROUP ? 'circleSprite-red' : 'circleSprite-white'
         );
         sprite.setDisplayOrigin(48, 48);
         this.add.existing(sprite);
