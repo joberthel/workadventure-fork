@@ -18,7 +18,15 @@ import {
     RESOLUTION,
     ZOOM_LEVEL
 } from "../../Enum/EnvironmentVariable";
-import {ITiledMap, ITiledMapLayer, ITiledMapLayerProperty, ITiledMapObject, ITiledTileSet} from "../Map/ITiledMap";
+import {
+    ITiledMap,
+    ITiledMapLayer,
+    ITiledMapLayerProperty,
+    ITiledMapObject,
+    ITiledText,
+    ITiledMapTileLayer,
+    ITiledTileSet
+} from "../Map/ITiledMap";
 import {AddPlayerInterface} from "./AddPlayerInterface";
 import {PlayerAnimationDirections} from "../Player/Animation";
 import {PlayerMovement} from "./PlayerMovement";
@@ -79,6 +87,8 @@ import {worldFullMessageStream} from "../../Connexion/WorldFullMessageStream";
 import { lazyLoadCompanionResource } from "../Companion/CompanionTexturesLoadingManager";
 import { InteractiveLayer } from "../Map/InteractiveLayer";
 import AnimatedTiles from "phaser-animated-tiles";
+import {TextUtils} from "../Components/TextUtils";
+import {LayersIterator} from "../Map/LayersIterator";
 import {touchScreenManager} from "../../Touch/TouchScreenManager";
 import {PinchManager} from "../UserInput/PinchManager";
 import {joystickBaseImg, joystickBaseKey, joystickThumbImg, joystickThumbKey} from "../Components/MobileJoystick";
@@ -139,7 +149,7 @@ export class GameScene extends ResizableScene implements CenterListener {
     pendingEvents: Queue<InitUserPositionEventInterface|AddPlayerEventInterface|RemovePlayerEventInterface|UserMovedEventInterface|GroupCreatedUpdatedEventInterface|DeleteGroupEventInterface> = new Queue<InitUserPositionEventInterface|AddPlayerEventInterface|RemovePlayerEventInterface|UserMovedEventInterface|GroupCreatedUpdatedEventInterface|DeleteGroupEventInterface>();
     private initPosition: PositionInterface|null = null;
     private playersPositionInterpolator = new PlayersPositionInterpolator();
-    public connection!: RoomConnection;
+    public connection: RoomConnection|undefined;
     private simplePeer!: SimplePeer;
     private GlobalMessageManager!: GlobalMessageManager;
     public ConsoleGlobalMessageManager!: ConsoleGlobalMessageManager;
@@ -399,7 +409,7 @@ export class GameScene extends ResizableScene implements CenterListener {
         this.interactiveLayers = new Array<InteractiveLayer>();
 
         let depth = -2;
-        for (const layer of this.mapFile.layers) {
+        for (const layer of this.gameMap.layersIterator) {
             if (layer.type === 'tilelayer') {
                 if (this.isLayerInteractive(layer) === false) {
                     this.addLayer(this.Map.createLayer(layer.name, this.Terrains, 0, 0).setDepth(depth));
@@ -419,9 +429,16 @@ export class GameScene extends ResizableScene implements CenterListener {
             if (layer.type === 'objectgroup' && layer.name === 'floorLayer') {
                 depth = 10000;
             }
+            if (layer.type === 'objectgroup') {
+                for (const object of layer.objects) {
+                    if (object.text) {
+                        TextUtils.createTextFromITiledMapObject(this, object);
+                    }
+                }
+            }
         }
         if (depth === -2) {
-            throw new Error('Your map MUST contain a layer of type "objectgroup" whose name is "floorLayer" that represents the layer characters are drawn at.');
+            throw new Error('Your map MUST contain a layer of type "objectgroup" whose name is "floorLayer" that represents the layer characters are drawn at. This layer cannot be contained in a group.');
         }
 
         this.initStartXAndStartY();
@@ -432,7 +449,7 @@ export class GameScene extends ResizableScene implements CenterListener {
         //initialise list of other player
         this.MapPlayers = this.physics.add.group({immovable: true});
 
-        
+
         //create input to move
         mediaManager.setUserInputManager(this.userInputManager);
         this.userInputManager = new UserInputManager(this);
@@ -729,7 +746,7 @@ export class GameScene extends ResizableScene implements CenterListener {
                     if (JITSI_PRIVATE_MODE && !jitsiUrl) {
                         const adminTag = allProps.get("jitsiRoomAdminTag") as string|undefined;
 
-                        this.connection.emitQueryJitsiJwtMessage(roomName, adminTag);
+                        this.connection?.emitQueryJitsiJwtMessage(roomName, adminTag);
                     } else {
                         this.startJitsi(roomName, undefined);
                     }
@@ -752,9 +769,9 @@ export class GameScene extends ResizableScene implements CenterListener {
         });
         this.gameMap.onPropertyChange('silent', (newValue, oldValue) => {
             if (newValue === undefined || newValue === false || newValue === '') {
-                this.connection.setSilent(false);
+                this.connection?.setSilent(false);
             } else {
-                this.connection.setSilent(true);
+                this.connection?.setSilent(true);
             }
         });
         this.gameMap.onPropertyChange('playAudio', (newValue, oldValue, allProps) => {
@@ -973,13 +990,14 @@ ${escapedMessage}
     }
 
     private initPositionFromLayerName(layerName: string) {
-        for (const layer of this.mapFile.layers) {
-            if (layerName === layer.name && layer.type === 'tilelayer' && (layerName === defaultStartLayerName || this.isStartLayer(layer))) {
+        for (const layer of this.gameMap.layersIterator) {
+            if ((layerName === layer.name || layer.name.endsWith('/'+layerName)) && layer.type === 'tilelayer' && (layerName === defaultStartLayerName || this.isStartLayer(layer))) {
                 const startPosition = this.startUser(layer);
                 this.startX = startPosition.x + this.mapFile.tilewidth/2;
                 this.startY = startPosition.y + this.mapFile.tileheight/2;
             }
         }
+
     }
 
     private getExitUrl(layer: ITiledMapLayer): string|undefined {
@@ -1006,7 +1024,7 @@ ${escapedMessage}
     }
 
     private getProperty(layer: ITiledMapLayer|ITiledMap, name: string): string|boolean|number|undefined {
-        const properties: ITiledMapLayerProperty[] = layer.properties;
+        const properties: ITiledMapLayerProperty[]|undefined = layer.properties;
         if (!properties) {
             return undefined;
         }
@@ -1018,7 +1036,7 @@ ${escapedMessage}
     }
 
     private getProperties(layer: ITiledMapLayer|ITiledMap, name: string): (string|number|boolean|undefined)[] {
-        const properties: ITiledMapLayerProperty[] = layer.properties;
+        const properties: ITiledMapLayerProperty[]|undefined = layer.properties;
         if (!properties) {
             return [];
         }
@@ -1032,7 +1050,7 @@ ${escapedMessage}
         await gameManager.loadMap(room, this.scene);
     }
 
-    private startUser(layer: ITiledMapLayer): PositionInterface {
+    private startUser(layer: ITiledMapTileLayer): PositionInterface {
         const tiles = layer.data;
         if (typeof(tiles) === 'string') {
             throw new Error('The content of a JSON map must be filled as a JSON array, not as a string');
@@ -1196,7 +1214,7 @@ ${escapedMessage}
         this.lastMoveEventSent = event;
         this.lastSentTick = this.currentTick;
         const camera = this.cameras.main;
-        this.connection.sharePosition(event.x, event.y, event.direction, event.moving, {
+        this.connection?.sharePosition(event.x, event.y, event.direction, event.moving, {
             left: camera.scrollX,
             top: camera.scrollY,
             right: camera.scrollX + camera.width,
@@ -1262,7 +1280,7 @@ ${escapedMessage}
      * Put all the players on the map on map load.
      */
     private doInitUsersPosition(usersPosition: MessageUserPositionInterface[]): void {
-        const currentPlayerId = this.connection.getUserId();
+        const currentPlayerId = this.connection?.getUserId();
         this.removeAllRemotePlayers();
         // load map
         usersPosition.forEach((userPosition : MessageUserPositionInterface) => {
@@ -1406,7 +1424,7 @@ ${escapedMessage}
      * Sends to the server an event emitted by one of the ActionableItems.
      */
     emitActionableEvent(itemId: number, eventName: string, state: unknown, parameters: unknown) {
-        this.connection.emitActionableEvent(itemId, eventName, state, parameters);
+        this.connection?.emitActionableEvent(itemId, eventName, state, parameters);
     }
 
     public onResize(): void {
@@ -1414,7 +1432,7 @@ ${escapedMessage}
 
         // Send new viewport to server
         const camera = this.cameras.main;
-        this.connection.setViewport({
+        this.connection?.setViewport({
             left: camera.scrollX,
             top: camera.scrollY,
             right: camera.scrollX + camera.width,
@@ -1470,7 +1488,7 @@ ${escapedMessage}
         const jitsiUrl = allProps.get("jitsiUrl") as string|undefined;
 
         jitsiFactory.start(roomName, this.playerName, jwt, jitsiConfig, jitsiInterfaceConfig, jitsiUrl);
-        this.connection.setSilent(true);
+        this.connection?.setSilent(true);
         mediaManager.hideGameOverlay();
 
         //permit to stop jitsi when user close iframe
