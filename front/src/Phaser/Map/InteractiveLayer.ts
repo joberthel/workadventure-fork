@@ -5,7 +5,7 @@ import Container = Phaser.GameObjects.Container;
 import { GameScene } from "../Game/GameScene";
 import { Character } from "../Entity/Character";
 import { PositionInterface } from "../../Connexion/ConnexionModels";
-import { ITiledMapLayer, ITiledMapLayerProperty } from "./ITiledMap";
+import { ITiledMapTileLayer, ITiledMapLayerProperty } from "./ITiledMap";
 
 interface SpriteEntity {
     animation: string|false;
@@ -26,12 +26,12 @@ interface TileAnimation {
 export class InteractiveLayer extends Container {
     private lastUpdate: number;
     private allActive: boolean;
-    private layer: ITiledMapLayer;
+    private layer: ITiledMapTileLayer;
     private spritesCollection: Array<SpriteEntity>;
     
     private updateListener: Function;
     
-    constructor(scene: GameScene, layer: ITiledMapLayer) {
+    constructor(scene: GameScene, layer: ITiledMapTileLayer) {
         const { x, y } = layer;
 
         super(scene, x, y);
@@ -192,10 +192,10 @@ export class InteractiveLayer extends Container {
      * Adds all tiles from the layer as sprites to the scene. It will also define the 
      * animation frames, if they aren't already defined.
      * 
-     * @param {ITiledMapLayer} layer 
+     * @param {ITiledMapTileLayer} layer 
      * @returns {void}
      */
-    private addSprites(layer: ITiledMapLayer): void {
+    private addSprites(layer: ITiledMapTileLayer): void {
         if (typeof layer.data === "string") {
             return;
         }
@@ -328,12 +328,11 @@ export class InteractiveLayer extends Container {
      * @returns {string|boolean|number|undefined}
      */
     private getLayerProperty(name: string): string|boolean|number|undefined {
-        const properties: ITiledMapLayerProperty[] = this.layer.properties;
-
-        if (!properties) {
+        if (!this.layer.properties) {
             return undefined;
         }
-        
+
+        const properties: ITiledMapLayerProperty[] = this.layer.properties;
         const prop = properties.find((property: ITiledMapLayerProperty) => property.name === name);
 
         if (typeof prop === "undefined") {
