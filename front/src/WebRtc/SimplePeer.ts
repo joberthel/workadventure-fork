@@ -82,15 +82,11 @@ export class SimplePeer {
         });
 
         mediaManager.showGameOverlay();
-        mediaManager.getCamera().then(() => {
-
+        mediaManager.getCamera().finally(() => {
             //receive message start
             this.Connection.receiveWebrtcStart((message: UserSimplePeerInterface) => {
                 this.receiveWebrtcStart(message);
             });
-
-        }).catch((err) => {
-            console.error("err", err);
         });
 
         this.Connection.disconnectMessage((data: WebRtcDisconnectMessageInterface): void => {
@@ -162,6 +158,11 @@ export class SimplePeer {
                 this.sendLocalScreenSharingStreamToUser(user.userId);
             }
         });
+
+        //Create a notification for first user in circle discussion
+        if(this.PeerConnectionArray.size === 0){
+            mediaManager.createNotification(user.name??'');
+        }
         this.PeerConnectionArray.set(user.userId, peer);
 
         for (const peerConnectionListener of this.peerConnectionListeners) {

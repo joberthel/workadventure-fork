@@ -7,6 +7,7 @@ export const hasMovedEventName = "hasMoved";
 export interface CurrentGamerInterface extends Character{
     moveUser(delta: number) : void;
     say(text : string) : void;
+    isMoving(): boolean;
 }
 
 export class Player extends Character implements CurrentGamerInterface {
@@ -84,5 +85,9 @@ export class Player extends Character implements CurrentGamerInterface {
         this.wasMoving = moving;
 
         this.updateShadow(direction || this.previousDirection as PlayerAnimationDirections);
+    }
+
+    public isMoving(): boolean {
+        return this.wasMoving;
     }
 }
